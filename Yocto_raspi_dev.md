@@ -1,0 +1,323 @@
+
+# Yocto環境 で ラズベリーパイ４用アプリ 開発
+
+## 1 目的
+Yocto環境でラズベリーパイ４のアプリやカーネルドライバを開発する環境を構築する<br>
+ラズベリーパイ４に接続したLCDに、Webから取得した経済指標値を表示する<br>
+動作させた様子は、https://www.youtube.com/shorts/1DS9vUlRqi0 を参照<br>
+
+## 2.1 開発環境
+
+### 2.1 ホスト
+Yocto環境(https://www.yoctoproject.org/) を使用する<br>
+Yoctoのバージョンは kirkstone を使用する<br>
+開発PCは ノートPC lenovo X230 を使用した(低性能のためフルビルドで6時間程度)<br> 
+開発PCのOSは ubuntu 22.04 (Yoctoが指定するもの) を使用する<br> 
+開発PCは Wi-Fiルータを経由しインターネットに接続する<br>
+開発PCで Yoctoツール(BitBake)を使用し実行イメージを作成し、マイクロSDカードに書き込む<br>
+
+### 2.2 ターゲット
+ラズベリーパイ４(以降ラズパイ)を使用する<br>
+接続するLCDは aqm0802 を使用する<br>
+イメージを格納したマイクロSDカードをラズパイに差し込み、電源を入れ起動する<br>
+ラズパイ起動後、開発PCからラズパイへSSH接続し状態確認、デバッグ等を行う<br>
+
+## 3 機能
+ラズパイは起動後 Wi-Fiルータに接続する<br>
+ラズパイのインタフェース wlan0 の IPアドレスは 192.168.11.6 とする(DHCPとすることも可)<br>
+起動時後、日本国内の公開NTPサーバーに接続し時刻同期する<br>
+アプリは、Pythonプログラム(disp-eco-data.py)で、経済指標値を周期的にスクレイピングし、C言語アプリドライバ(aqm0802.c)を介し LCDに表示する<br>
+Webスクリプティングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建)
+ラズパイに電源が供給されると、Wi-Fi接続、アプリ起動、現在の経済指標値の取得とLCD表示を自動的に行う<br>
+起動後、周期的にWebスクリプティングとLCD表示をする<br>
+任意の端末からラズパイにSSH接続し、状態確認や処理実行が可能<br>
+
+## 4 環境構築手順
+開発PC内の任意の位置にプロジェクトフォルダを作り、その中に Yoctoに関するファイル類 をクローンする<br>
+そしてユーザ独自のフォルダを作り、レシピ(Yoctoが扱う手順)やソースコードを格納する<br>
+Yoctoツール BitBake を用いて、ラズパイで動作させるイメージをビルドする<br>
+以下に手順の詳細を記す
+
+### 4.1 プロジェクトディレクトリ作成
+```
+mkdir yocto_rpi
+cd yocto_rpi
+```
+※yocto_rpi は任意、以下pathの記載はこのフォルダをベースとする
+
+
+### 4.2 Poky をクローン（Yoctoのコアレイヤー）`
+```
+git clone -b kirkstone git://git.yoctoproject.org/poky.git
+```
+### 4.3 meta-openembedded をクローン（追加のレシピとレイヤー）
+```
+git clone -b kirkstone git://git.openembedded.org/meta-openembedded
+```
+### 4.4 meta-raspberrypi をクローン（Raspberry Pi BSP）
+```
+git clone -b kirkstone git://git.yoctoproject.org/meta-raspberrypi
+```
+ここまではクローン後、内容はいじらない
+
+### 4.5 ユーザ独自のレイヤーを作成
+```
+mkdir meta-custom
+```
+本フォオルダはGitHub()を参照
+
+### 4.5.1 カスタムレイヤのファイルと構造
+#### 構成ファイル
+.confは Yocto Projectにおける設定ファイル<br>
+.bbは レシピ(自作のスクリプトやサービスファイルをイメージに含めるための「設計図」)<br>
+.bbappendは レシピ拡張(他のレイヤーにある既存のレシピの設定を、元のレシピを直接書き換えずに変更するために使う)<br>
+.serviceは systemd ユニットファイル(Yocto環境で自作アプリを自動起動させるため使う)<br>
+.networkは systemd-networkd というネットワーク管理サービスの設定ファイル<br>
+各ファイルの内容は 5 構成ファイルの内容 を参照<br>
+
+#### yocto_rpi/build/conf内の構造
+注文書・環境設定(特定のビルドに対する 「個別設定」 を行う場所を定義する)
+```
+.
+├── bblayers.conf
+├── local.conf
+└── templateconf.cfg
+```
+#### yocto_rpi/meta-custom内の構造
+設計図・資産(「何を作るか」「どう作るか」という手順を定義する)
+```
+.
+├── conf
+│   └── layer.conf
+├── recipes-app
+│   └── disp-eco-data
+│       ├── disp-eco-data_1.0.bb
+│       └── files
+│           ├── Makefile
+│           ├── aqm0802.c
+│           ├── disp-eco-data.py
+│           ├── disp-eco-data.service
+│           └── run_disp_eco_data.sh
+├── recipes-connectivity
+│   ├── resolvconf-static
+│   │   ├── files
+│   │   │   └── resolv.conf
+│   │   └── resolvconf-static_1.0.bb
+│   └── wpa-supplicant
+│       ├── files
+│       │   ├── wpa_supplicant.conf
+│       │   └── wpa_supplicant@.service
+│       └── wpa-supplicant_%.bbappend
+├── recipes-core
+│   ├── images
+│   │   └── cunstom-image.bb
+│   └── systemd
+│       ├── files
+│       │   ├── 20-wlan0.network
+│       │   ├── 30-eth0.network
+│       │   └── rpi-modules.conf
+│       └── systemd_%.bbappend
+├── recipes-extended
+│   ├── my-settings
+│   │   ├── files
+│   │   │   └── rpi-init.service
+│   │   └── my-settings.bb
+│   ├── ntp
+│   │   ├── files
+│   │   │   └── ntp.conf
+│   │   └── ntp_%.bbappend
+│   └── ntp-once
+│       ├── files
+│       │   └── ntp-once.service
+│       └── ntp-once_1.0.bb
+├── recipes-images
+│   └── core-image
+│       └── core-image-full-cmdline.bbappend
+├── recipes-kernel
+│   ├── linux-firmware
+│   │   ├── files
+│   │   │   ├── brcmfmac43455-sdio.bin
+│   │   │   ├── brcmfmac43455-sdio.raspberrypi,4-model-b.bin
+│   │   │   └── brcmfmac43455-sdio.raspberrypi,4-model-b.txt
+│   │   └── linux-firmware_%.bbappend
+│   └── test-module
+│       ├── files
+│       │   ├── Makefile
+│       │   └── test-module.c
+│       └── test-module_1.0.bb
+└── recipes-python
+    ├── multitasking
+    │   └── python3-multitasking_0.0.11.bb
+    ├── python-init
+    │   ├── files
+    │   │   ├── python-env-setup.service
+    │   │   └── setup-python-env.sh
+    │   └── python-init_1.0.bb
+    ├── python3-frozendict
+    │   └── python3-frozendict.bb
+    ├── python3-peewee
+    │   └── python3-peewee_3.17.1.bb
+    ├── python3-platformdirs
+    │   └── python3-platformdirs_2.6.2.bb
+    └── yfinance
+        └── python3-yfinance_0.2.40.bb
+```
+## 4.6 ビルドする
+/home/user/yocto_rpi/　で以下を実行する
+```
+source poky/oe-init-build-env build
+bitbake core-image-full-cmdline
+```
+
+## 4.7 イメージをSDカードに書き込む
+開発PCがSDカードを /dev/mmcblk0 として認識している状態で以下を実行する<br>
+または書き込みツールを利用する<br>
+"user"は任意<br>
+```
+rm core-image-full-cmdline-raspberrypi4-64.wic
+cp /home/user/yocto_rpi/build/tmp/deploy/images/raspberrypi4-64/core* .
+bzip2 -d core-image-full-cmdline-raspberrypi4-64.wic.bz2
+sudo dd if=/dev/zero of=/dev/mmcblk0 bs=1M count=1
+sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M status=progress conv=fsync
+```
+SDカードを開発PCから抜く
+
+## 4.8 実行
+SDカードをラズパイに挿す<br>
+ラズパイを起動<br>
+起動後しばらくしてLCDに経済情報が表示される<br>
+開発PCのターミナルで ssh root@192.168.11.6 を実行し、ラズパイにSSH接続しログの確認や処理実行可能
+
+## 5 構成ファイルの内容
+ファイルを格納するpathは 4.5 ユーザ独自のレイヤー で設定した場所(本ケースでは"yocto_rpi")がベース
+
+### 5.1 build/conf(個人の開発環境に依存するもの)
+注文書・環境設定(特定のビルドに対する 「個別設定」 を行う場所を定義する)
+
+#### bblayers.conf
+path:yocto_rpi/build/conf<br>
+BitBakeが検索を試みるレイヤーのリスト
+以下を記する
+```
+POKY_BBLAYERS_CONF_VERSION = "2"
+
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+BBLAYERS ?= " \
+  /home/mamoru/yocto_rpi/poky/meta \
+  /home/mamoru/yocto_rpi/poky/meta-poky \
+  /home/mamoru/yocto_rpi/poky/meta-yocto-bsp \
+  /home/mamoru/yocto_rpi/meta-openembedded/meta-oe \
+  /home/mamoru/yocto_rpi/meta-openembedded/meta-python \
+  /home/mamoru/yocto_rpi/meta-openembedded/meta-networking \
+  /home/mamoru/yocto_rpi/meta-openembedded/meta-multimedia \
+  /home/mamoru/yocto_rpi/meta-custom \
+  /home/mamoru/yocto_rpi/meta-raspberrypi \
+  " 
+```
+#### local.conf 
+path:yocto_rpi/build/conf<br>
+Yocto Projectが使用するローカルユーザ用設定ファイル
+以下を変更・追記する
+```
+MACHINE = "raspberrypi4-64"
+
+CONF_VERSION = "2"
+EXTRA_IMAGE_FEATURES += " \
+  ssh-server-openssh \
+  debug-tweaks \
+  "
+IMAGE_FEATURES += "tools-debug"
+DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
+PACKAGECONFIG:pn-systemd = "networkd utmp"
+DISTRO_FEATURES:append = " systemd"
+VIRTUAL-RUNTIME_init_manager = "systemd"
+VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+CORE_IMAGE_EXTRA_INSTALL += " openssh openssh-sshd xz i2c-tools "
+IMAGE_INSTALL:append = " \
+                         python3-pip python3-certifi python3-setuptools \
+                         python3-sqlite3 python3-modules python-init \
+                       "
+IMAGE_INSTALL:append = " \
+                         wpa-supplicant systemd crda linux-firmware \
+                         libgpiod libgpiod-dev libgpiod-tools \
+                         resolvconf-static ntp ntp-once \
+                         usbutils pciutils kernel-modules rpi-module-loader \
+                         disp-eco-data \
+                         test-module \
+                       "
+BB_NUMBER_THREADS = "2"
+PARALLEL_MAKE = "-j 2"
+RPI_EXTRA_CONFIG:append = " \n dtparam=i2c_vc=on \n dtparam=i2c_arm=on \n dtoverlay=i2c-dev"
+INIT_MANAGER = "systemd"
+SYSTEMD_AUTO_ENABLE:pn-systemd-networkd = "enable"
+PACKAGECONFIG:remove:pn-glibc = "nscd"
+PACKAGECONFIG:append:pn-systemd = " timesyncd"
+SYSTEMD_AUTO_ENABLE:pn-ntp = "enable"
+SYSTEMD_AUTO_ENABLE:pn-disp-eco-data = "enable"
+IMAGE_INSTALL:append = " tzdata"
+DEFAULT_TIMEZONE = "Asia/Tokyo"
+```
+
+### 5.2 meta-custom(プロジェクト固有の資産)
+設計図・資産(「何を作るか」「どう作るか」という手順を定義する)
+
+#### rpi-modules.conf
+path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
+ロードするドライバモジュール brcmfmac と i2c-dev を記す
+
+#### wpa_supplicant.conf
+path:yocto_rpi/meta-custom/recipes-connectivity/wpa-supplicant/files<br>
+wlan0経由でのWiFi接続先を記す
+
+#### 20-wlan0.network
+path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
+wlan0のipアドレスを記す
+
+#### ntp.conf
+path:yocto_rpi/meta-custom/recipes-extended/ntp/files<br>
+ntpサーバのURIを記す
+
+#### ntp-once.service
+path:yocto_rpi/meta-custom/recipes-extended/ntp-once/files<br>
+起動時の時刻動機処理を記す
+
+#### rpi-init.service
+path:yocto_rpi/meta-custom/recipes-extended/my-settings/files<br>
+モジュールの読み込みとサービスの有効化を記す
+
+#### disp-eco-data.py
+path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
+本ファイルがユーザアプリケーション<br>
+Webサイト yahooファイナンス より各指標値を取得し、LCD表示処理に渡す<br>
+
+##### web スクレイピングしLCDに表示する内容
+Webサイト(Yahoo Finance) から スクレイピングする内容
+|シンボル|	正式名称	|意味・内容|
+| :----- | :--------- | :------- |
+|JPY=X|	USD/JPY|	ドル円の為替レート。1ドルが何円かを表す|
+|^GSPC|	S&P 500	|S&P 500 指数。米国株の主要500社の時価総額加重平均。米国市場全体の調子を見る指標|
+|^IXIC|	NASDAQ Composite|ナスダック総合指数。テック企業（Apple, Google等）が多い市場の指標|
+|^N225|	Nikkei 225|日経平均株価。日本を代表する225銘柄の平均株価|
+|^TNX	|10-Year Treasury Note|米国債10年物利回り。長期金利の代表。株価や住宅ローンに大きな影響を与えます|
+|^ZTY00|2-Year Treasury Note|米国債2年物利回り|
+|GC=F	|Gold Futures	|金（ゴールド）先物。安全資産とされる金の価格|
+|BTC-USD|Bitcoin USD|ビットコイン（ドル建て）。代表的な暗号資産の価格|
+|ETH-USD|Ethereum USD|イーサリアム（ドル建て）。時価総額2位の暗号資産|
+
+LCDに表示する際、年月日時分を表示後、上記の内容を順に表示する<br>
+
+#### disp-eco-data.service
+path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
+WebスクレイピングとLCD表示を記す
+
+#### aqm0802.c 
+path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
+引数で渡される文字列データをLCDに表示するLinuxアプリドライバ
+
+#### test-module.c
+path:yocto_rpi/meta-custom/recipes-kernel/test-module/files<br>
+テスト用カーネルドライバ(insmod rmmod 時ログ出力するだけ[今後の拡張用])
+
+以上

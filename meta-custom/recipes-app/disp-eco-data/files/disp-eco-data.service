@@ -1,0 +1,14 @@
+[Unit]
+Description=Display Eco Data Service
+#After=network-online.target
+#Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/run_disp_eco_data.sh
+Restart=always
+User=root
+WorkingDirectory=/usr/bin
+
+[Install]
+WantedBy=multi-user.target

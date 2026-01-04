@@ -1,0 +1,20 @@
+[Unit]
+Description=Raspberry Pi Custom Initialization
+After=local-fs.target
+
+[Service]
+Type=oneshot
+# モジュールの読み込み
+ExecStartPre=/sbin/modprobe i2c-bcm2708
+ExecStartPre=/sbin/modprobe i2c-dev
+ExecStartPre=/sbin/modprobe brcmfmac
+
+# サービスの有効化（有効化はビルド時または一度の実行で完了させるのが理想）
+# 起動は systemctl start でなく enable で永続化させるべきですが、
+# 依存関係として他のサービスを有効化/起動したい場合に ExecStart に記述します
+ExecStart=/bin/systemctl start wpa_supplicant@wlan0.service
+ExecStart=/bin/systemctl start ntpd
+
+[Install]
+# network.target の後に実行されるように設定
+WantedBy=multi-user.target

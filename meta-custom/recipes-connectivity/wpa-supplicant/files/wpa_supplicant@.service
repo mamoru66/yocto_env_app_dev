@@ -1,0 +1,38 @@
+[Unit]
+# Description: ユニットの簡単な説明。%Iはインスタンス名に展開されます。
+Description=WPA Supplicant daemon (interface %I)
+
+# Requires/After: 依存関係の定義
+# サービスが正常に動作するために、ネットワークデバイスがSystemdによって
+# 準備された後に起動することを保証します。
+Requires=sys-subsystem-net-devices-%i.device
+After=sys-subsystem-net-devices-%i.device
+
+# BindsTo: 依存関係の強化。デバイスがダウンするとこのサービスも停止します。
+BindsTo=sys-subsystem-net-devices-%i.device
+
+[Service]
+# Type: サービスの起動タイプ
+# simple: サービスプロセスがメインプロセスである。
+Type=simple
+
+# ExecStart: サービスが起動する際に実行されるコマンド
+# %I (大文字) はインターフェース名 (例: wlan0) に展開されます。
+# -i%I : 対象インターフェースを指定。
+# -c/etc/wpa_supplicant/wpa_supplicant-%I.conf : 対象インターフェース用の設定ファイルを指定。
+ExecStart=/usr/sbin/wpa_supplicant -i%I -c/etc/wpa_supplicant/wpa_supplicant-%I.conf
+
+# Restart: サービスが予期せず終了した場合の再起動ポリシー
+# always: 常に再起動を試みる。
+Restart=always
+
+# Capabilities: 特権の指定
+# wpa_supplicantがネットワークを管理するために必要なパーミッション
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+
+[Install]
+# WantedBy: ユニットが自動有効化されるターゲット。
+# このユニットが有効化されると、マルチユーザー環境の準備が完了した際に起動を試みます。
+# Note: このセクションがある場合、systemctl enable wpa_supplicant@wlan0.service
+# のような操作で自動有効化リンクが作成されます。
+WantedBy=multi-user.target

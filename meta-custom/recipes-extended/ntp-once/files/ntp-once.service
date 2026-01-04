@@ -1,0 +1,17 @@
+[Unit]
+Description=NTP One-Time Sync for Large Drifts
+# ネットワークがオンラインになってから実行
+Requires=network-online.target
+After=network-online.target
+# ntpd.service が起動する前に実行させるための依存関係
+Before=ntpd.service
+
+[Service]
+# コマンド実行後すぐにサービスが終了する設定
+Type=oneshot
+# -gq: 大きな時刻のズレを即座にジャンプ修正し、終了
+ExecStart=/usr/sbin/ntpd -gq
+
+[Install]
+# マルチユーザーモードで起動する際に実行されるように有効化
+WantedBy=multi-user.target
