@@ -4,7 +4,7 @@
 ## 1 目的
 Yocto環境でラズベリーパイ４のアプリやカーネルドライバを開発する環境を構築する<br>
 ラズベリーパイ４に接続したLCDに、Webから取得した経済指標値を表示する<br>
-動作させた様子は、https://www.youtube.com/shorts/1DS9vUlRqi0 を参照<br>
+動作する様子は、https://www.youtube.com/shorts/1DS9vUlRqi0 を参照<br>
 
 ## 2.1 開発環境
 
@@ -26,10 +26,10 @@ Yoctoのバージョンは kirkstone を使用する<br>
 ラズパイは起動後 Wi-Fiルータに接続する<br>
 ラズパイのインタフェース wlan0 の IPアドレスは 192.168.11.6 とする(DHCPとすることも可)<br>
 起動時後、日本国内の公開NTPサーバーに接続し時刻同期する<br>
-アプリは、Pythonプログラム(disp-eco-data.py)で、経済指標値を周期的にスクレイピングし、C言語アプリドライバ(aqm0802.c)を介し LCDに表示する<br>
-Webスクリプティングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建)
+アプリは、Pythonプログラム(disp-eco-data.py)で、経済指標値をWebスクレイピングし、C言語アプリドライバ(aqm0802.c)を介し LCDに表示する<br>
+Webスクレイピングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建)
 ラズパイに電源が供給されると、Wi-Fi接続、アプリ起動、現在の経済指標値の取得とLCD表示を自動的に行う<br>
-起動後、周期的にWebスクリプティングとLCD表示をする<br>
+起動後、周期的にWebスクレイピングとLCD表示をする<br>
 任意の端末からラズパイにSSH接続し、状態確認や処理実行が可能<br>
 
 ## 4 環境構築手順
@@ -67,12 +67,13 @@ mkdir meta-custom
 本フォルダの内容はGitHub(このファイルと同じ階層に配置)を参照
 
 ### 4.5.1 カスタムレイヤのファイルと構造
+
 #### 構成ファイル
-.confは Yocto Projectにおける設定ファイル<br>
-.bbは レシピ(自作のスクリプトやサービスファイルをイメージに含めるための「設計図」)<br>
-.bbappendは レシピ拡張(他のレイヤーにある既存のレシピの設定を、元のレシピを直接書き換えずに変更するために使う)<br>
-.serviceは systemd ユニットファイル(Yocto環境で自作アプリを自動起動させるため使う)<br>
-.networkは systemd-networkd というネットワーク管理サービスの設定ファイル<br>
+.conf は Yocto Projectにおける設定ファイル<br>
+.bb は レシピ(自作のスクリプトやサービスファイルをイメージに含めるための「設計図」)<br>
+.bbappend は レシピ拡張(他のレイヤーにある既存のレシピの設定を、元のレシピを直接書き換えずに変更するために使う)<br>
+.service は systemd ユニットファイル(Yocto環境で自作アプリを自動起動させるため使う)<br>
+.network は systemd-networkd というネットワーク管理サービスの設定ファイル<br>
 各ファイルの内容は 5 構成ファイルの内容 を参照<br>
 
 #### yocto_rpi/build/conf内の構造
@@ -196,8 +197,8 @@ SDカードをラズパイに挿す<br>
 
 #### bblayers.conf
 path:yocto_rpi/build/conf<br>
-BitBakeが検索を試みるレイヤーのリスト
-以下を記する
+BitBakeが検索を試みるレイヤーのリスト<br>
+以下を記す
 ```
 POKY_BBLAYERS_CONF_VERSION = "2"
 
@@ -218,8 +219,8 @@ BBLAYERS ?= " \
 ```
 #### local.conf 
 path:yocto_rpi/build/conf<br>
-Yocto Projectが使用するローカルユーザ用設定ファイル
-以下を変更・追記する
+Yocto Projectが使用するローカルユーザ用設定ファイル<br>
+以下を変更・追記する<br>
 ```
 MACHINE = "raspberrypi4-64"
 
@@ -273,7 +274,7 @@ wlan0経由でのWiFi接続先を記す
 
 #### 20-wlan0.network
 path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
-wlan0のipアドレスを記す
+インタフェース wlan0 のipアドレスを記す
 
 #### ntp.conf
 path:yocto_rpi/meta-custom/recipes-extended/ntp/files<br>
@@ -292,8 +293,9 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 本ファイルがユーザアプリケーション<br>
 Webサイト yahooファイナンス より各指標値を取得し、LCD表示処理に渡す<br>
 
-##### web スクレイピングしLCDに表示する内容
-Webサイト(Yahoo Finance) から スクレイピングする内容
+##### WebスクレイピングしLCDに表示する内容
+Webサイト(Yahoo Finance) から スクレイピングする内容<br>
+
 |シンボル|	正式名称	|意味・内容|
 | :----- | :--------- | :------- |
 |JPY=X|	USD/JPY|	ドル円の為替レート。1ドルが何円かを表す|
@@ -318,6 +320,6 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 
 #### test-module.c
 path:yocto_rpi/meta-custom/recipes-kernel/test-module/files<br>
-テスト用カーネルドライバ(insmod rmmod 時ログ出力するだけ[今後の拡張用])
+テスト用カーネルドライバ(insmod rmmod 時ログ出力するだけ[今後の拡張用])<br>
 
 以上
