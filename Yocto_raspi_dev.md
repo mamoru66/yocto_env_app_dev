@@ -64,7 +64,7 @@ git clone -b kirkstone git://git.yoctoproject.org/meta-raspberrypi
 ```
 mkdir meta-custom
 ```
-本フォオルダはGitHub()を参照
+本フォルダの内容はGitHub(このファイルと同じ階層に配置)を参照
 
 ### 4.5.1 カスタムレイヤのファイルと構造
 #### 構成ファイル
@@ -301,7 +301,7 @@ Webサイト(Yahoo Finance) から スクレイピングする内容
 |^IXIC|	NASDAQ Composite|ナスダック総合指数。テック企業（Apple, Google等）が多い市場の指標|
 |^N225|	Nikkei 225|日経平均株価。日本を代表する225銘柄の平均株価|
 |^TNX	|10-Year Treasury Note|米国債10年物利回り。長期金利の代表。株価や住宅ローンに大きな影響を与えます|
-|^ZTY00|2-Year Treasury Note|米国債2年物利回り|
+|^FVX |5-Year Treasury Note|米国債5年物利回り|
 |GC=F	|Gold Futures	|金（ゴールド）先物。安全資産とされる金の価格|
 |BTC-USD|Bitcoin USD|ビットコイン（ドル建て）。代表的な暗号資産の価格|
 |ETH-USD|Ethereum USD|イーサリアム（ドル建て）。時価総額2位の暗号資産|
