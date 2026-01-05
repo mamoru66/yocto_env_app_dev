@@ -8,29 +8,82 @@ Yocto環境でラズベリーパイ４のアプリやカーネルドライバを
 
 ## 2.1 開発環境
 
-### 2.1 ホスト
+### 2.1 開発PC
 Yocto環境(https://www.yoctoproject.org/) を使用する<br>
 Yoctoのバージョンは kirkstone を使用する<br>
 開発PCは ノートPC lenovo X230 を使用した(低性能のためフルビルドで6時間程度)<br> 
 開発PCのOSは ubuntu 22.04 (Yoctoが指定するもの) を使用する<br> 
 開発PCは Wi-Fiルータを経由しインターネットに接続する<br>
-開発PCで Yoctoツール(BitBake)を使用し実行イメージを作成し、マイクロSDカードに書き込む<br>
+開発PCで Yoctoツール(BitBake)で実行イメージを作成し、ddコマンド等でマイクロSDカードにイメージを書く<br>
 
 ### 2.2 ターゲット
 ラズベリーパイ４(以降ラズパイ)を使用する<br>
-接続するLCDは aqm0802 を使用する<br>
-イメージを格納したマイクロSDカードをラズパイに差し込み、電源を入れ起動する<br>
-ラズパイ起動後、開発PCからラズパイへSSH接続し状態確認、デバッグ等を行う<br>
+LCDは、２行☓８文字のLCD表示機(AQM0802A)を用い、Raspberry Pi４のI2Cポートに接続し使用する<br>
+バックライトは、LEDを用いRaspberry Pi４のGPIOポート(20ピン)に接続する<br>
+その他ブレッドボード、電線、抵抗等を用いた<br>
+イメージを格納したマイクロSDカードをラズパイに差し込み、電源を入れる<br>
+
+#### 2.2.1 ラズパイとLCD、ラズパイとLEDの接続
+以下の接続とした<br>
+<div style="width: 600px; margin: auto;">
+
+```mermaid
+graph LR
+    %% ノードの定義
+    subgraph Raspberry_Pi [Raspberry Pi 4]
+        P1[3.3V Pin 1]
+        P3[SDA Pin 3]
+        P5[SCL Pin 5]
+        P6[GND Pin 6]
+        GPIO20[GPIO20 Pin 38]
+        P34[GND Pin 34]
+    end
+
+    subgraph LCD [LCD aqm0802]
+        VCC[VCC]
+        SDA[SDA]
+        SCL[SCL]
+        GND[GND]
+    end
+
+    subgraph Circuit [回路]
+        R[抵抗 560Ω]
+        LED_A{LED + アノード}
+        LED_K{LED - カソード}
+    end
+    
+    %% 配線の定義
+    P1 --- VCC
+    P3 --- SDA
+    P5 --- SCL
+    P6 --- GND
+    GPIO20 --- R
+    R --- LED_A
+    LED_A --- LED_K
+    P34 --- LED_K
+    
+    %% スタイルの変更（色分け）
+    style P1 fill:#f96,stroke:#333
+    style P6 fill:#666,stroke:#333,color:#fff
+    style P34 fill:#666,stroke:#333,color:#fff
+```
+  図１：接続図
+</div>
 
 ## 3 機能
 ラズパイは起動後 Wi-Fiルータに接続する<br>
 ラズパイのインタフェース wlan0 の IPアドレスは 192.168.11.6 とする(DHCPとすることも可)<br>
 起動時後、日本国内の公開NTPサーバーに接続し時刻同期する<br>
 アプリは、Pythonプログラム(disp-eco-data.py)で、経済指標値をWebスクレイピングし、C言語アプリドライバ(aqm0802.c)を介し LCDに表示する<br>
-Webスクレイピングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建)
+Webスクレイピングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)
 ラズパイに電源が供給されると、Wi-Fi接続、アプリ起動、現在の経済指標値の取得とLCD表示を自動的に行う<br>
 起動後、周期的にWebスクレイピングとLCD表示をする<br>
+LCDに値を表示する際LEDを点灯、LCDへの表示停止時にLEDを消灯する<br>
 任意の端末からラズパイにSSH接続し、状態確認や処理実行が可能<br>
+<div style="text-align: center;">
+  <img src="png_file/動作確認画面.png" alt="" width="800" height="600"><br>
+  図２：動作確認画面
+</div>
 
 ## 4 環境構築手順
 開発PC内の任意の位置にプロジェクトフォルダを作り、その中に Yoctoに関するファイル類 をクローンする<br>
@@ -170,10 +223,10 @@ source poky/oe-init-build-env build
 bitbake core-image-full-cmdline
 ```
 
-## 4.7 イメージをSDカードに書き込む
-開発PCがSDカードを /dev/mmcblk0 として認識している状態で以下を実行する<br>
-または書き込みツールを利用する<br>
-"user"は任意<br>
+## 4.7 イメージをマイクロSDカードに書き込む
+開発PCがマイクロSDカードを /dev/mmcblk0 として認識している状態で以下を実行する<br>
+または書き込みツール(BalenaEtcher等)を利用する<br>
+コマンド内の"user"は任意<br>
 ```
 rm core-image-full-cmdline-raspberrypi4-64.wic
 cp /home/user/yocto_rpi/build/tmp/deploy/images/raspberrypi4-64/core* .
@@ -181,12 +234,12 @@ bzip2 -d core-image-full-cmdline-raspberrypi4-64.wic.bz2
 sudo dd if=/dev/zero of=/dev/mmcblk0 bs=1M count=1
 sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M status=progress conv=fsync
 ```
-SDカードを開発PCから抜く
+マイクロSDカードを開発PCから抜く
 
 ## 4.8 実行
-SDカードをラズパイに挿す<br>
+マイクロSDカードをラズパイに挿す<br>
 ラズパイを起動<br>
-起動後しばらくしてLCDに経済情報が表示される<br>
+起動後しばらくしてLCDに経済指標値が表示される<br>
 開発PCのターミナルで ssh root@192.168.11.6 を実行し、ラズパイにSSH接続しログの確認や処理実行可能
 
 ## 5 構成ファイルの内容
@@ -292,6 +345,15 @@ path:yocto_rpi/meta-custom/recipes-extended/my-settings/files<br>
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 本ファイルがユーザアプリケーション<br>
 Webサイト yahooファイナンス より各指標値を取得し、LCD表示処理に渡す<br>
+pythonプログラム仕様<br> 
+`def get_price(url, selector):`<br>
+　選択項目を指定し目的の値を取得する<br>
+`def get_financial_data():`<br>
+　yahoo financeから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
+`def send_message(message):`<br>
+　pipeを利用してC言語プログラムへ伝達する<br>
+`if __name__ == "__main__":`<br>
+　上記処理を実行する　<br>
 
 ##### WebスクレイピングしLCDに表示する内容
 Webサイト(Yahoo Finance) から スクレイピングする内容<br>
@@ -317,6 +379,31 @@ WebスクレイピングとLCD表示を記す
 #### aqm0802.c 
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 引数で渡される文字列データをLCDに表示するLinuxアプリドライバ
+##### C言語プログラム仕様
+###### LCD制御に関するもの
+`void lcd_init(int fd)`<br>
+　LCD(AQM0802A)を初期化する<br>
+　　機能セット: 8ビットモード、2行表示、 拡張命令セット、内部発振器周波数設定、コントラスト設定、電源/フォロワ制御<br>
+　　機能セット: 基本命令セット、表示制御: 表示ON、カーソルOFF、点滅OFF、画面クリア<br>
+`void lcd_write_byte(int fd, unsigned char data, unsigned char mode)`<br>
+　I2C経由に１バイト出力する<br>
+`void lcd_write_string(int fd, const char *str)`<br>
+　LCDに文字列を表示する。上記１バイト出力関数を呼び出す<br>
+`void lcd_line_select(int fd,int line)`<br>
+　LCDの表示行を指定する<br>
+`int main()`<br>
+　gpioを初期化する<br>
+　i2c用デバイスファイルをオープンする<br>
+　ライトを点灯する<br>
+　スクレイピング処理から伝達された経済指標データを１項目づつLCDに表示する<br>
+　ライトを消灯する<br>
+###### LED制御に関するもの
+`int gpio_init()`<br>
+　GPIODライブラリを呼び出しGPIOラインの初期化をする<br>
+`void gpio_cleanup()`<br>
+　GPIOラインを開放する<br>
+`void light_ctrl(char onoff)`<br>
+　ラズパイGPIO(20ピン)にON/OFFを出力する<br>
 
 #### test-module.c
 path:yocto_rpi/meta-custom/recipes-kernel/test-module/files<br>
