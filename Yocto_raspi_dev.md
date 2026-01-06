@@ -252,6 +252,7 @@ sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M sta
 path:yocto_rpi/build/conf<br>
 BitBakeが検索を試みるレイヤーのリスト<br>
 以下を記す
+定義内の"user"は任意<br>
 ```
 POKY_BBLAYERS_CONF_VERSION = "2"
 
@@ -259,15 +260,15 @@ BBPATH = "${TOPDIR}"
 BBFILES ?= ""
 
 BBLAYERS ?= " \
-  /home/mamoru/yocto_rpi/poky/meta \
-  /home/mamoru/yocto_rpi/poky/meta-poky \
-  /home/mamoru/yocto_rpi/poky/meta-yocto-bsp \
-  /home/mamoru/yocto_rpi/meta-openembedded/meta-oe \
-  /home/mamoru/yocto_rpi/meta-openembedded/meta-python \
-  /home/mamoru/yocto_rpi/meta-openembedded/meta-networking \
-  /home/mamoru/yocto_rpi/meta-openembedded/meta-multimedia \
-  /home/mamoru/yocto_rpi/meta-custom \
-  /home/mamoru/yocto_rpi/meta-raspberrypi \
+  /home/user/yocto_rpi/poky/meta \
+  /home/user/yocto_rpi/poky/meta-poky \
+  /home/user/yocto_rpi/poky/meta-yocto-bsp \
+  /home/user/yocto_rpi/meta-openembedded/meta-oe \
+  /home/user/yocto_rpi/meta-openembedded/meta-python \
+  /home/user/yocto_rpi/meta-openembedded/meta-networking \
+  /home/user/yocto_rpi/meta-openembedded/meta-multimedia \
+  /home/user/yocto_rpi/meta-custom \
+  /home/user/yocto_rpi/meta-raspberrypi \
   " 
 ```
 #### local.conf 
