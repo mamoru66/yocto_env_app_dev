@@ -346,8 +346,6 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 本ファイルがユーザアプリケーション<br>
 Webサイト yahooファイナンス より各指標値を取得し、LCD表示処理に渡す<br>
 pythonプログラム仕様<br> 
-`def get_price(url, selector):`<br>
-　選択項目を指定し目的の値を取得する<br>
 `def get_financial_data():`<br>
 　yahoo financeから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
 `def send_message(message):`<br>
@@ -381,16 +379,18 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 引数で渡される文字列データをLCDに表示するLinuxアプリドライバ
 ##### C言語プログラム仕様
 ###### LCD制御に関するもの
-`void lcd_init(int fd)`<br>
-　LCD(AQM0802A)を初期化する<br>
-　　機能セット: 8ビットモード、2行表示、 拡張命令セット、内部発振器周波数設定、コントラスト設定、電源/フォロワ制御<br>
-　　機能セット: 基本命令セット、表示制御: 表示ON、カーソルOFF、点滅OFF、画面クリア<br>
 `void lcd_write_byte(int fd, unsigned char data, unsigned char mode)`<br>
 　I2C経由に１バイト出力する<br>
 `void lcd_write_string(int fd, const char *str)`<br>
 　LCDに文字列を表示する。上記１バイト出力関数を呼び出す<br>
+`void lcd_clr(int fd)`<br>
+  LCDをクリアする<br>
 `void lcd_line_select(int fd,int line)`<br>
 　LCDの表示行を指定する<br>
+`void lcd_init(int fd)`<br>
+　LCD(AQM0802A)を初期化する<br>
+　　機能セット: 8ビットモード、2行表示、 拡張命令セット、内部発振器周波数設定、コントラスト設定、電源/フォロワ制御<br>
+　　機能セット: 基本命令セット、表示制御: 表示ON、カーソルOFF、点滅OFF、画面クリア<br>
 `int main()`<br>
 　gpioを初期化する<br>
 　i2c用デバイスファイルをオープンする<br>
