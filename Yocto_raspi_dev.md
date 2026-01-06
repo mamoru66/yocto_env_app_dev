@@ -83,6 +83,8 @@ LCDに値を表示する際LEDを点灯、LCDへの表示停止時にLEDを消�
 <div style="text-align: center;">
   <img src="png_file/状態確認画面.png" alt="" width="800" height="600"><br>
   図２：状態確認画面
+</div>
+<div style="text-align: center;">
   <img src="png_file/動作確認画面.png" alt="" width="800" height="600"><br>
   図３：動作確認画面
 </div>
