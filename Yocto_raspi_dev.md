@@ -18,13 +18,13 @@ Yoctoのバージョンは kirkstone を使用する<br>
 
 ### 2.2 ターゲット
 ラズベリーパイ４(以降ラズパイ)を使用する<br>
-LCDは、２行☓８文字のLCD表示機(AQM0802A)を用い、ラズパイのI2Cポートに接続し使用する<br>
-バックライトは、LEDを用いラズパイのGPIOポート(20ピン)に接続する<br>
+LCDは、2行☓8文字のLCD表示機(AQM0802A)を用い、ラズパイのI2Cポートに接続し使用する<br>
+バックライトは、LEDを用いラズパイのGPIOポート20(38ピン)に接続する<br>
 その他ブレッドボード、電線、抵抗等を用いた<br>
 イメージを格納したマイクロSDカードをラズパイに差し込み、電源を入れる<br>
 
 #### 2.2.1 ラズパイとLCD、ラズパイとLEDの接続
-以下の接続とした<br>
+接続は以下の通り<br>
 <div style="width: 600px; margin: auto;">
 
 ```mermaid
@@ -255,7 +255,7 @@ sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M sta
 #### bblayers.conf
 path:yocto_rpi/build/conf<br>
 BitBakeが検索を試みるレイヤーのリスト<br>
-以下を記す
+以下を記す<br>
 定義内の"user"は任意<br>
 ```
 POKY_BBLAYERS_CONF_VERSION = "2"
@@ -340,7 +340,7 @@ ntpサーバのURIを記す
 
 #### ntp-once.service
 path:yocto_rpi/meta-custom/recipes-extended/ntp-once/files<br>
-起動時の時刻動機処理を記す
+起動時の時刻同期処理を記す
 
 #### rpi-init.service
 path:yocto_rpi/meta-custom/recipes-extended/my-settings/files<br>
