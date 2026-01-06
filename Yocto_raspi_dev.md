@@ -81,8 +81,10 @@ Webスクレイピングする経済指標値は、ドル円、S&P500、NASDAQ�
 LCDに値を表示する際LEDを点灯、LCDへの表示停止時にLEDを消灯する<br>
 任意の端末からラズパイにSSH接続し、状態確認や処理実行が可能<br>
 <div style="text-align: center;">
+  <img src="png_file/状態確認画面.png" alt="" width="800" height="600"><br>
+  図２：状態確認画面
   <img src="png_file/動作確認画面.png" alt="" width="800" height="600"><br>
-  図２：動作確認画面
+  図３：動作確認画面
 </div>
 
 ## 4 環境構築手順
