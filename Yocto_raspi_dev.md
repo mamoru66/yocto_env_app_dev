@@ -6,7 +6,7 @@ Yocto環境でラズベリーパイ４のアプリやカーネルドライバを
 ラズベリーパイ４に接続したLCDに、Webから取得した経済指標値を表示する<br>
 動作する様子は、https://www.youtube.com/shorts/1DS9vUlRqi0 を参照<br>
 
-## 2.1 開発環境
+## 2 開発環境
 
 ### 2.1 開発PC
 Yocto環境(https://www.yoctoproject.org/) を使用する<br>
@@ -72,7 +72,7 @@ graph LR
 
 ## 3 機能
 ラズパイは起動後 Wi-Fiルータに接続する<br>
-ラズパイのインタフェース wlan0 の IPアドレスは 192.168.11.6 とする(DHCPとすることも可)<br>
+ラズパイのインタフェース wlan0 は、IPアドレスを 192.168.11.6 とする(DHCPにすることも可)<br>
 起動時後、日本国内の公開NTPサーバーに接続し時刻同期する<br>
 アプリは、Pythonプログラム(disp-eco-data.py)で、経済指標値をWebスクレイピングし、C言語アプリドライバ(aqm0802.c)を介し LCDに表示する<br>
 Webスクレイピングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)
@@ -95,7 +95,7 @@ LCDに値を表示する際LEDを点灯、LCDへの表示停止時にLEDを消�
 Yoctoツール BitBake を用いて、ラズパイで動作させるイメージをビルドする<br>
 以下に手順の詳細を記す
 
-### 4.1 プロジェクトディレクトリ作成
+### 4.1 プロジェクトフォルダ作成
 ```
 mkdir yocto_rpi
 cd yocto_rpi
@@ -123,9 +123,9 @@ mkdir meta-custom
 ```
 本フォルダの内容はGitHub(このファイルと同じ階層に配置)を参照
 
-### 4.5.1 カスタムレイヤのファイルと構造
+### 4.6 構成ファイルと構造
 
-#### 構成ファイル
+### 4.6.1 構成ファイルの種類
 .conf は Yocto Projectにおける設定ファイル<br>
 .bb は レシピ(自作のスクリプトやサービスファイルをイメージに含めるための「設計図」)<br>
 .bbappend は レシピ拡張(他のレイヤーにある既存のレシピの設定を、元のレシピを直接書き換えずに変更するために使う)<br>
@@ -133,7 +133,9 @@ mkdir meta-custom
 .network は systemd-networkd というネットワーク管理サービスの設定ファイル<br>
 各ファイルの内容は 5 構成ファイルの内容 を参照<br>
 
-#### yocto_rpi/build/conf内の構造
+### 4.6.2 フォルダの構造
+
+#### 4.6.2.1 yocto_rpi/build/conf
 注文書・環境設定(特定のビルドに対する 「個別設定」 を行う場所を定義する)
 ```
 .
@@ -141,7 +143,7 @@ mkdir meta-custom
 ├── local.conf
 └── templateconf.cfg
 ```
-#### yocto_rpi/meta-custom内の構造
+#### 4.6.2.2 yocto_rpi/meta-custom
 設計図・資産(「何を作るか」「どう作るか」という手順を定義する)
 ```
 .
@@ -220,14 +222,14 @@ mkdir meta-custom
     └── yfinance
         └── python3-yfinance_0.2.40.bb
 ```
-## 4.6 ビルドする
+## 4.7 ビルドする
 /home/user/yocto_rpi/　で以下を実行する
 ```
 source poky/oe-init-build-env build
 bitbake core-image-full-cmdline
 ```
 
-## 4.7 イメージをマイクロSDカードに書き込む
+## 4.8 イメージをマイクロSDカードに書き込む
 開発PCがマイクロSDカードを /dev/mmcblk0 として認識している状態で以下を実行する<br>
 または書き込みツール(BalenaEtcher等)を利用する<br>
 コマンド内の"user"は任意<br>
@@ -240,19 +242,19 @@ sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M sta
 ```
 マイクロSDカードを開発PCから抜く
 
-## 4.8 実行
+## 4.9 実行
 マイクロSDカードをラズパイに挿す<br>
 ラズパイを起動<br>
 起動後しばらくしてLCDに経済指標値が表示される<br>
 開発PCのターミナルで ssh root@192.168.11.6 を実行し、ラズパイにSSH接続しログの確認や処理実行可能
 
 ## 5 構成ファイルの内容
-ファイルを格納するpathは 4.5 ユーザ独自のレイヤー で設定した場所(本ケースでは"yocto_rpi")がベース
+ファイルを格納するpathは 4.1 プロジェクトフォルダ作成 で設定した場所(本ケースでは"yocto_rpi")がベースになる
 
 ### 5.1 build/conf(個人の開発環境に依存するもの)
 注文書・環境設定(特定のビルドに対する 「個別設定」 を行う場所を定義する)
 
-#### bblayers.conf
+#### 5.1.1 bblayers.conf
 path:yocto_rpi/build/conf<br>
 BitBakeが検索を試みるレイヤーのリスト<br>
 以下を記す<br>
@@ -275,7 +277,7 @@ BBLAYERS ?= " \
   /home/user/yocto_rpi/meta-raspberrypi \
   " 
 ```
-#### local.conf 
+#### 5.1.2 local.conf 
 path:yocto_rpi/build/conf<br>
 Yocto Projectが使用するローカルユーザ用設定ファイル<br>
 以下を変更・追記する<br>
@@ -322,45 +324,35 @@ DEFAULT_TIMEZONE = "Asia/Tokyo"
 ### 5.2 meta-custom(プロジェクト固有の資産)
 設計図・資産(「何を作るか」「どう作るか」という手順を定義する)
 
-#### rpi-modules.conf
+#### 5.2.1 rpi-modules.conf
 path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
 ロードするドライバモジュール brcmfmac と i2c-dev を記す
 
-#### wpa_supplicant.conf
+#### 5.2.2 wpa_supplicant.conf
 path:yocto_rpi/meta-custom/recipes-connectivity/wpa-supplicant/files<br>
 wlan0経由でのWiFi接続先を記す
 
-#### 20-wlan0.network
+#### 5.2.3 20-wlan0.network
 path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
 インタフェース wlan0 のipアドレスを記す
 
-#### ntp.conf
+#### 5.2.4 ntp.conf
 path:yocto_rpi/meta-custom/recipes-extended/ntp/files<br>
 ntpサーバのURIを記す
 
-#### ntp-once.service
+#### 5.2.5 ntp-once.service
 path:yocto_rpi/meta-custom/recipes-extended/ntp-once/files<br>
 起動時の時刻同期処理を記す
 
-#### rpi-init.service
+#### 5.2.6 rpi-init.service
 path:yocto_rpi/meta-custom/recipes-extended/my-settings/files<br>
 モジュールの読み込みとサービスの有効化を記す
 
-#### disp-eco-data.py
+#### 5.2.7 disp-eco-data.py
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 本ファイルがユーザアプリケーション<br>
 Webサイト yahooファイナンス より各指標値を取得し、LCD表示処理に渡す<br>
-pythonプログラム仕様<br> 
-`def get_financial_data():`<br>
-　yahoo financeから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
-`def send_message(message):`<br>
-　pipeを利用してC言語プログラムへ伝達する<br>
-`if __name__ == "__main__":`<br>
-　上記処理を実行する　<br>
-
-##### WebスクレイピングしLCDに表示する内容
-Webサイト(Yahoo Finance) から スクレイピングする内容<br>
-
+各指標値の内容は以下の通り
 |シンボル|	正式名称	|意味・内容|
 | :----- | :--------- | :------- |
 |JPY=X|	USD/JPY|	ドル円の為替レート。1ドルが何円かを表す|
@@ -373,21 +365,27 @@ Webサイト(Yahoo Finance) から スクレイピングする内容<br>
 |BTC-USD|Bitcoin USD|ビットコイン（ドル建て）。代表的な暗号資産の価格|
 |ETH-USD|Ethereum USD|イーサリアム（ドル建て）。時価総額2位の暗号資産|
 
-LCDに表示する際、年月日時分を表示後、上記の内容を順に表示する<br>
+##### 5.2.7.1 pythonプログラム仕様 
+`def get_financial_data():`<br>
+　yahoo financeから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
+　LCDに表示するデータを組み立てる際、先頭に年月日時分を格納する<br>
+`def send_message(message):`<br>
+　pipeを利用してC言語プログラムへLCDに表示するデータを伝達する<br>
+`if __name__ == "__main__":`<br>
+　上記処理を実行する　<br>
 
-#### disp-eco-data.service
+#### 5.2.8 disp-eco-data.service
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
-WebスクレイピングとLCD表示を記す
+WebスクレイピングとLCD表示を実行するシェルを登録する
 
-#### aqm0802.c 
+#### 5.2.9 aqm0802.c 
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 引数で渡される文字列データをLCDに表示するLinuxアプリドライバ
-##### C言語プログラム仕様
-###### LCD制御に関するもの
+##### 5.2.9.1 C言語プログラム仕様(LCD制御に関するもの)
 `void lcd_write_byte(int fd, unsigned char data, unsigned char mode)`<br>
-　I2C経由に１バイト出力する<br>
+　I2C経由に1バイト出力する<br>
 `void lcd_write_string(int fd, const char *str)`<br>
-　LCDに文字列を表示する。上記１バイト出力関数を呼び出す<br>
+　LCDに文字列を表示する。上記1バイト出力関数を呼び出す<br>
 `void lcd_clr(int fd)`<br>
   LCDをクリアする<br>
 `void lcd_line_select(int fd,int line)`<br>
@@ -402,7 +400,7 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 　ライトを点灯する<br>
 　スクレイピング処理から伝達された経済指標データを１項目づつLCDに表示する<br>
 　ライトを消灯する<br>
-###### LED制御に関するもの
+##### 5.2.9.2 C言語プログラム仕様(LED制御に関するもの)
 `int gpio_init()`<br>
 　GPIODライブラリを呼び出しGPIOラインの初期化をする<br>
 `void gpio_cleanup()`<br>
@@ -410,7 +408,7 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 `void light_ctrl(char onoff)`<br>
 　ラズパイGPIO(20ピン)にON/OFFを出力する<br>
 
-#### test-module.c
+#### 5.2.10 test-module.c
 path:yocto_rpi/meta-custom/recipes-kernel/test-module/files<br>
 テスト用カーネルドライバ(insmod rmmod 時ログ出力するだけ[今後の拡張用])<br>
 
