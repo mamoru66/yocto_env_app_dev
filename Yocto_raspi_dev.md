@@ -366,9 +366,23 @@ Webサイト yahooファイナンス より各指標値を取得し、LCD表示�
 |BTC-USD|Bitcoin USD|ビットコイン（ドル建て）。代表的な暗号資産の価格|
 |ETH-USD|Ethereum USD|イーサリアム（ドル建て）。時価総額2位の暗号資産|
 
+LCDは8文字2行表示のため以下のフォーマットで表示データを組み立てる
+|項目|表示内容(1行目)|表示内容(2行目)|
+| :----- | :--------- | :------- |
+|日時|年月日|時:分:秒|
+|ドル円の為替レート|USDJPY|yahooファイナンスから取得した値(小数点以下2桁まで)|
+|S&P 500 指数|S&P500|yahooファイナンスから取得した値|
+|ナスダック総合指数|NASDAQ|yahooファイナンスから取得した値|
+|日経平均株価|Nikkei|yahooファイナンスから取得した値|
+|米国債10年物利回り|US10Y|yahooファイナンスから取得した値(小数点以下2桁まで)|
+|米国債5年物利回り|US05Y|yahooファイナンスから取得した値(小数点以下2桁まで)|
+|金（ゴールド）先物価格|US Gold|yahooファイナンスから取得した値|
+|ビットコイン（ドル建て）|BTC-US|yahooファイナンスから取得した値|
+|イーサリアム（ドル建て）|ETH-US|yahooファイナンスから取得した値|
+
 ##### 5.2.8.1 pythonプログラム仕様 
 `def get_financial_data():`<br>
-　yahoo financeから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
+　yahooファイナンスから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
 　LCDに表示するデータを組み立てる際、先頭に年月日時分を格納する<br>
 `def send_message(message):`<br>
 　pipeを利用してC言語プログラムへLCDに表示するデータを伝達する<br>
@@ -380,11 +394,11 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 引数で渡される文字列データをLCDに表示するLinuxアプリドライバ
 ##### 5.2.9.1 C言語プログラム仕様(LCD制御に関するもの)
 `void lcd_write_byte(int fd, unsigned char data, unsigned char mode)`<br>
-　I2C経由に1バイト出力する<br>
+　I2C経由でLCDデバイスに表示データを1バイト出力する<br>
 `void lcd_write_string(int fd, const char *str)`<br>
 　LCDに文字列を表示する。上記1バイト出力関数を呼び出す<br>
 `void lcd_clr(int fd)`<br>
-  LCDをクリアする<br>
+　LCDの表示を消す<br>
 `void lcd_line_select(int fd,int line)`<br>
 　LCDの表示行を指定する<br>
 `void lcd_init(int fd)`<br>
@@ -394,9 +408,9 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 `int main()`<br>
 　gpioを初期化する<br>
 　i2c用デバイスファイルをオープンする<br>
-　ライトを点灯する<br>
+　LEDを点灯する<br>
 　スクレイピング処理から伝達された経済指標データを１項目づつLCDに表示する<br>
-　ライトを消灯する<br>
+　LEDを消灯する<br>
 ##### 5.2.9.2 C言語プログラム仕様(LED制御に関するもの)
 `int gpio_init()`<br>
 　GPIODライブラリを呼び出しGPIOラインの初期化をする<br>
