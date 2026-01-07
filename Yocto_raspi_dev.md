@@ -243,7 +243,7 @@ sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M sta
 マイクロSDカードをラズパイに挿す<br>
 ラズパイに電源を供給する<br>
 起動後しばらくするとLCDに経済指標値が表示される<br>
-開発PCのターミナルで ssh root@192.168.11.6 を実行すると、ラズパイにSSH接続し状態の確認や各処理の実行が可能となる
+開発PCのターミナルで ssh root@192.168.11.6 を実行すると、ラズパイにSSH接続し状態の確認や各処理の実行が可能になる
 
 ## 5 構成ファイルの内容
 ファイルを格納するpathは 4.1 プロジェクトフォルダ作成 で設定した場所(本ケースでは"yocto_rpi")がベースになる
@@ -345,7 +345,11 @@ path:yocto_rpi/meta-custom/recipes-extended/ntp-once/files<br>
 path:yocto_rpi/meta-custom/recipes-extended/my-settings/files<br>
 モジュールの読み込みとサービスの有効化を記す
 
-#### 5.2.7 disp-eco-data.py
+#### 5.2.7 disp-eco-data.service
+path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
+WebスクレイピングとLCD表示を実行するシェルを登録する
+
+#### 5.2.8 disp-eco-data.py
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 本ファイルがユーザアプリケーション<br>
 Webサイト yahooファイナンス より各指標値を取得し、LCD表示処理に渡す<br>
@@ -362,7 +366,7 @@ Webサイト yahooファイナンス より各指標値を取得し、LCD表示�
 |BTC-USD|Bitcoin USD|ビットコイン（ドル建て）。代表的な暗号資産の価格|
 |ETH-USD|Ethereum USD|イーサリアム（ドル建て）。時価総額2位の暗号資産|
 
-##### 5.2.7.1 pythonプログラム仕様 
+##### 5.2.8.1 pythonプログラム仕様 
 `def get_financial_data():`<br>
 　yahoo financeから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
 　LCDに表示するデータを組み立てる際、先頭に年月日時分を格納する<br>
@@ -370,10 +374,6 @@ Webサイト yahooファイナンス より各指標値を取得し、LCD表示�
 　pipeを利用してC言語プログラムへLCDに表示するデータを伝達する<br>
 `if __name__ == "__main__":`<br>
 　上記処理を実行する　<br>
-
-#### 5.2.8 disp-eco-data.service
-path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
-WebスクレイピングとLCD表示を実行するシェルを登録する
 
 #### 5.2.9 aqm0802.c 
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
