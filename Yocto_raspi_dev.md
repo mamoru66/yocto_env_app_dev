@@ -2,14 +2,14 @@
 # Yocto環境 で ラズベリーパイ４用アプリ 開発
 
 ## 1 目的
-Yocto環境でラズベリーパイ４のアプリやカーネルドライバを開発する環境を構築する<br>
-ラズベリーパイ４に接続したLCDに、Webから取得した経済指標値を表示する<br>
+YoctoProjectを利用しラズベリーパイ４のアプリやカーネルドライバを開発する環境を構築する<br>
+ラズベリーパイ４に接続したLCDに、Webから取得した経済指標値を表示するアプリを作成する<br>
 動作する様子は、https://www.youtube.com/shorts/1DS9vUlRqi0 を参照<br>
 
 ## 2 開発環境
 
 ### 2.1 開発PC
-Yocto環境(https://www.yoctoproject.org/) を使用する<br>
+YoctoProject(https://www.yoctoproject.org/) を使用する<br>
 Yoctoのバージョンは kirkstone を使用する<br>
 開発PCは ノートPC lenovo X230 を使用した(低性能のためフルビルドで6時間程度)<br> 
 開発PCのOSは ubuntu 22.04 (Yoctoが指定するもの) を使用する<br> 
