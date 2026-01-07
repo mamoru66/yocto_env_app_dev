@@ -14,14 +14,12 @@ Yoctoのバージョンは kirkstone を使用する<br>
 開発PCは ノートPC lenovo X230 を使用した(低性能のためフルビルドで6時間程度)<br> 
 開発PCのOSは ubuntu 22.04 (Yoctoが指定するもの) を使用する<br> 
 開発PCは Wi-Fiルータを経由しインターネットに接続する<br>
-開発PCで Yoctoツール(BitBake)で実行イメージを作成し、ddコマンド等でマイクロSDカードにイメージを書く<br>
 
 ### 2.2 ターゲット
 ラズベリーパイ４(以降ラズパイ)を使用する<br>
 LCDは、2行☓8文字のLCD表示機(AQM0802A)を用いラズパイのI2Cポートに接続する<br>
 バックライトは、LEDを用いラズパイのGPIOポート20に接続する<br>
 その他ブレッドボード、電線、抵抗等を用いた<br>
-イメージを格納したマイクロSDカードをラズパイに差し込み、電源を入れる<br>
 
 #### 2.2.1 ラズパイとLCD、ラズパイとLEDの接続
 接続は以下の通り<br>
@@ -73,11 +71,11 @@ graph LR
 ## 3 機能
 ラズパイは起動時に以下を行う<br>
 ・Wi-Fiルータに接続する<br>
-・インタフェースwlan0のIPアドレスを 192.168.11.6 に固定する(DHCPにすることも可)<br>
+・インタフェース wlan0 のIPアドレスを 192.168.11.6 に固定する(DHCPにすることも可)<br>
 ・日本国内の公開NTPサーバーに接続し時刻を同期する<br>
 ・アプリケーションを起動する<br>
 　アプリはPythonプログラム(disp-eco-data.py)で、経済指標値をWebスクレイピングし、C言語アプリドライバ(aqm0802.c)を介し LCDに表示する<br>
-　Webスクレイピングする経済指標値は、ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)である<br>
+　経済指標値：ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)<br>
 起動後は、周期的にWebスクレイピングとLCD表示をする<br>
 LCDに経済指標値を表示する際LEDを点灯し、表示終了後LEDを消灯する<br>
 任意の端末からラズパイにSSH接続し、状態確認や処理実行が可能<br>
@@ -329,7 +327,7 @@ path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
 
 #### 5.2.2 wpa_supplicant.conf
 path:yocto_rpi/meta-custom/recipes-connectivity/wpa-supplicant/files<br>
-wlan0経由でのWiFi接続先を記す
+wlan0経由でのWi-Fi接続先を記す
 
 #### 5.2.3 20-wlan0.network
 path:yocto_rpi/meta-custom/recipes-core/systemd/files<br>
