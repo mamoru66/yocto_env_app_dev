@@ -226,8 +226,8 @@ source poky/oe-init-build-env build
 bitbake core-image-full-cmdline
 ```
 
-## 4.9 イメージをマイクロSDカードに書き込む
-開発PCがマイクロSDカードを /dev/mmcblk0 として認識している状態で以下を実行する<br>
+## 4.9 イメージをmicroSDカードに書き込む
+開発PCがmicroSDカードを /dev/mmcblk0 として認識している状態で以下を実行する<br>
 または書き込みツール(BalenaEtcher等)を利用する<br>
 コマンド内の"user"は任意<br>
 ```
@@ -237,10 +237,10 @@ bzip2 -d core-image-full-cmdline-raspberrypi4-64.wic.bz2
 sudo dd if=/dev/zero of=/dev/mmcblk0 bs=1M count=1
 sudo dd if=core-image-full-cmdline-raspberrypi4-64.wic of=/dev/mmcblk0 bs=4M status=progress conv=fsync
 ```
-マイクロSDカードを開発PCから抜く
+microSDカードを開発PCから抜く
 
 ## 4.10 実行
-マイクロSDカードをラズパイに挿す<br>
+microSDカードをラズパイに挿す<br>
 ラズパイに電源を供給する<br>
 起動後しばらくするとLCDに経済指標値が表示される<br>
 開発PCのターミナルで ssh root@192.168.11.6 を実行すると、ラズパイにSSH接続し状態の確認や各処理の実行が可能になる
@@ -383,7 +383,7 @@ LCDは8文字2行表示のため以下のフォーマットで表示データを
 ##### 5.2.8.1 pythonプログラム仕様 
 `def get_financial_data():`<br>
 　yahooファイナンスから”ドル円、S&P500、NASDAQ、日経平均、10年米国債利回り、5年米国債利回り、金価格、ビットコイン(ドル建て)、イーサリアム（ドル建て)”を取得する<br>
-　LCDに表示するデータを組み立てる際、先頭に年月日時分を格納する<br>
+　LCDに表示するデータを組み立てる際、先頭に年月日時分秒を格納する<br>
 `def send_message(message):`<br>
 　pipeを利用してC言語プログラムへLCDに表示するデータを伝達する<br>
 `if __name__ == "__main__":`<br>
@@ -409,7 +409,7 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 　gpioを初期化する<br>
 　i2c用デバイスファイルをオープンする<br>
 　LEDを点灯する<br>
-　スクレイピング処理から伝達された経済指標データを１項目づつLCDに表示する<br>
+　スクレイピング処理から伝達された経済指標データを1項目づつLCDに表示する<br>
 　LEDを消灯する<br>
 ##### 5.2.9.2 C言語プログラム仕様(LED制御に関するもの)
 `int gpio_init()`<br>
@@ -417,7 +417,7 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 `void gpio_cleanup()`<br>
 　GPIOラインを開放する<br>
 `void light_ctrl(char onoff)`<br>
-　ラズパイGPIO(20ピン)にON/OFFを出力する<br>
+　ラズパイGPIO20(38ピン)にON/OFFを出力する<br>
 
 #### 5.2.10 test-module.c
 path:yocto_rpi/meta-custom/recipes-kernel/test-module/files<br>
