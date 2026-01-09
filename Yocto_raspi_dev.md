@@ -391,7 +391,7 @@ LCDは8文字2行表示のため以下のフォーマットで表示データを
 
 #### 5.2.9 aqm0802.c 
 path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
-引数で渡される文字列データをLCDに表示するLinuxアプリドライバ
+pipe経由で渡される文字列データをLCDに表示するLinuxアプリドライバ
 ##### 5.2.9.1 C言語プログラム仕様(LCD制御に関するもの)
 `void lcd_write_byte(int fd, unsigned char data, unsigned char mode)`<br>
 　I2C経由でLCDデバイスに表示データを1バイト出力する<br>
@@ -409,7 +409,7 @@ path:yocto_rpi/meta-custom/recipes-app/disp-eco-data/files<br>
 　gpioを初期化する<br>
 　i2c用デバイスファイルをオープンする<br>
 　LEDを点灯する<br>
-　スクレイピング処理から伝達された経済指標データを1項目づつLCDに表示する<br>
+　pipe経由で渡されたデータを1項目づつLCDに表示する<br>
 　LEDを消灯する<br>
 ##### 5.2.9.2 C言語プログラム仕様(LED制御に関するもの)
 `int gpio_init()`<br>
